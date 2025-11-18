@@ -1,0 +1,236 @@
+1. Insert a new customer from India into the customers table.
+
+INSERT INTO Customers (
+    customerNumber, customerName, contactLastName, contactFirstName, phone, 
+    addressLine1, city, country, salesRepEmployeeNumber, creditLimit
+)
+VALUES (
+    400, 'Taj Models India', 'Sharma', 'Priya', '91-9876543210', 
+    '123 MG Road', 'Bengaluru', 'India', 1504, 80000.00
+);
+
+
+2. Update the creditLimit of all customers from Germany by 10%.
+
+UPDATE Customers
+SET creditLimit = creditLimit * 1.10
+WHERE country = 'Germany';
+
+3.Delete all orders placed before '2005-01-01'.
+
+DELETE FROM Orders
+WHERE orderDate < '2005-01-01';
+
+4.Add a new product to the products table with a productLine of 'Classic Cars'.
+
+INSERT INTO Products (
+    productCode, productName, productLine, productScale, 
+    productVendor, productDescription, quantityInStock, buyPrice, MSRP
+)
+VALUES (
+    'S18_4999', '1969 Ford Mustang Boss 302', 'Classic Cars', '1:18', 
+    'Motor City Diecast', 'A detailed replica of the classic muscle car.', 
+    5000, 55.00, 110.00
+);
+
+5.Insert a new payment for an existing customer using a check number.
+
+INSERT INTO Payments (
+    customerNumber, checkNumber, paymentDate, amount
+)
+VALUES (
+    121, 'HQ336336', '2005-11-18', 25000.50
+);
+
+6. Update the phone number of the office in London.
+
+UPDATE Offices
+SET phone = '+44 (0)20 7946 0999'
+WHERE city = 'London';
+
+7. Delete a product that has never been ordered.
+
+DELETE FROM Products
+WHERE productCode NOT IN (
+    SELECT DISTINCT productCode
+    FROM OrderDetails
+);
+
+8.Insert a new employee under a manager from office code '1'.
+
+INSERT INTO Employees (
+    employeeNumber, lastName, firstName, extension, email, 
+    officeCode, reportsTo, jobTitle
+)
+VALUES (
+    1900, 'Johnson', 'Ava', 'x5555', 'ava.johnson@classicmodels.com', 
+    '1', 1002, 'Sales Rep'
+);
+
+9. Retrieve all customers who have a credit limit greater than 50,000.
+
+SELECT  customerName, creditLimit
+FROM Customers
+WHERE creditLimit > 50000;
+
+10.List employees working in the 'San Francisco' office.
+
+SELECT  E.firstName, E.lastName, O.city AS officeCity
+FROM Employees E
+JOIN Offices O ON E.officeCode = O.officeCode
+WHERE O.city = 'San Francisco';
+
+11. Get all orders with status 'Shipped' and order date in 2004.
+SELECT orderNumber, orderDate, status
+FROM Orders
+WHERE status = 'Shipped' AND STRFTIME('%Y', orderDate) = '2004';
+
+12.Find products whose buy price is between 50 and 100.
+
+SELECT productName, buyPrice
+FROM Products
+WHERE buyPrice BETWEEN 50.00 AND 100.00;
+
+13. Find all employees who report to employee number 1143.
+SELECT firstName, lastName, reportsTo
+FROM Employees
+WHERE reportsTo = 1143;
+
+14 Retrieve customers from cities starting with 'S'.
+SELECT customerName, city
+FROM Customers
+WHERE city LIKE 'S%';
+
+15. List orders with comments containing the word "urgent".
+
+SELECT orderNumber, comments
+FROM Orders
+WHERE comments LIKE '%urgent%';
+
+16. Show all payments made in the year 2003.
+
+SELECT customerNumber, paymentDate, amount
+FROM  Payments
+WHERE paymentDate BETWEEN '2003-01-01' AND '2003-12-31'
+
+17. List total payments made by each customer.
+
+SELECT T1.customerName, SUM(T2.amount) AS totalPayments
+FROM Customers T1
+JOIN Payments T2 ON T1.customerNumber = T2.customerNumber
+GROUP BY 
+T1.customerName
+ORDER BY 
+totalPayments DESC;
+
+18. Show customers who have made more than 3 payments.
+
+SELECT T1.customerName, COUNT(T2.checkNumber) AS numberOfPayments
+FROM Customers T1
+JOIN Payments T2 ON T1.customerNumber = T2.customerNumber
+GROUP BY T1.customerName
+HAVING COUNT(T2.checkNumber) > 3
+ORDER BY numberOfPayments DESC;
+
+19. Count the number of employees in each office.
+
+SELECT T2.city, COUNT(T1.employeeNumber) AS numberOfEmployees
+FROM Employees T1
+JOIN Offices T2 ON T1.officeCode = T2.officeCode
+GROUP BY T2.city
+ORDER BY numberOfEmployees DESC;
+
+20. List product lines with an average product price greater than 100.
+
+SELECT productLine, AVG(MSRP) AS averageMSRP
+FROM Products
+GROUP BY 
+productLine
+HAVING 
+AVG(MSRP) > 100
+ORDER BY 
+averageMSRP DESC;
+
+21. List customers with total order amount greater than 50,000.
+
+SELECT T1.customerName, SUM(T3.quantityOrdered * T3.priceEach) AS totalOrderAmount
+FROM Customers T1
+JOIN Orders T2 ON T1.customerNumber = T2.customerNumber
+JOIN OrderDetails T3 ON T2.orderNumber = T3.orderNumber
+GROUP BY 
+T1.customerName
+HAVING 
+totalOrderAmount > 50000
+ORDER BY 
+totalOrderAmount DESC;
+
+22. Show total quantity ordered for each product code.
+
+SELECT productCode, SUM(quantityOrdered) AS totalQuantityOrdered
+FROM OrderDetails
+GROUP BY 
+productCode
+ORDER BY 
+totalQuantityOrdered DESC;
+
+23. Display number of orders for each order status.
+
+SELECT status, COUNT(orderNumber) AS numberOfOrders
+FROM Orders
+GROUP BY status
+ORDER BY 
+numberOfOrders DESC;
+
+24. List employees who manage more than 2 other employees.
+SELECT T1.firstName, T1.lastName, COUNT(T2.employeeNumber) AS managedEmployees
+FROM Employees T1 -- The Manager
+JOIN Employees T2 ON T1.employeeNumber = T2.reportsTo 
+GROUP BY T1.employeeNumber, T1.firstName, T1.lastName
+HAVING COUNT(T2.employeeNumber) > 2
+ORDER BY managedEmployees DESC;
+
+25. Display all customers in France ordered by credit limit in descending order.
+SELECT customerName, creditLimit
+FROM  Customers
+WHERE country = 'France'
+ORDER BY creditLimit DESC;
+
+26. List products ordered by quantity in stock in ascending order.
+SELECT productName, quantityInStock
+FROM Products
+ORDER BY quantityInStock ASC;
+
+27. Show all payments sorted by payment date (most recent first).
+SELECT paymentDate, amount, customerNumber
+FROM Payments
+ORDER BY paymentDate DESC;
+
+28. List employees ordered by job title and then by last name.
+SELECT jobTitle, lastName, firstName
+FROM Employees
+ORDER BY jobTitle ASC, lastName ASC;
+
+29. List the top 5 customers by credit limit.
+SELECT customerName, creditLimit
+FROM Customers
+ORDER BY creditLimit DESC
+LIMIT 5;
+
+30. Show product lines sorted alphabetically.
+
+SELECT DISTINCT productLine
+FROM Products
+ORDER BY productLine ASC;
+
+31. List the earliest 10 orders.
+SELECT  orderNumber, orderDate
+FROM Orders
+ORDER BY orderDate ASC
+LIMIT 10;
+
+32. Display products sorted by product line and then by price.
+SELECT productLine, productName, buyPrice
+FROM Products
+ORDER BY productLine ASC, buyPrice DESC;
+
+33. 
