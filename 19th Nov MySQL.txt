@@ -1,0 +1,317 @@
+33. List all orders along with customer names (INNER JOIN).
+SELECT 
+    T1.orderNumber, T2.customerName, T1.orderDate
+FROM 
+    Orders T1
+INNER JOIN 
+    Customers T2 ON T1.customerNumber = T2.customerNumber;
+
+34. Show employees and their managers using a self join.
+
+SELECT 
+    E.firstName AS EmployeeFirstName, 
+    E.lastName AS EmployeeLastName, 
+    M.firstName AS ManagerFirstName, 
+    M.lastName AS ManagerLastName
+FROM 
+    Employees E -- E is the Employee table alias
+INNER JOIN 
+    Employees M ON E.reportsTo = M.employeeNumber; 
+
+35. List all products and their order quantities (join products and orderdetails).
+SELECT 
+    T1.productName, SUM(T2.quantityOrdered) AS totalQuantityOrdered
+FROM 
+    Products T1
+INNER JOIN 
+    OrderDetails T2 ON T1.productCode = T2.productCode
+GROUP BY 
+    T1.productName
+ORDER BY 
+    totalQuantityOrdered DESC;
+
+36. Show customers who have not placed any orders (LEFT JOIN).
+
+SELECT 
+    T1.customerName
+FROM 
+    Customers T1
+LEFT JOIN 
+    Orders T2 ON T1.customerNumber = T2.customerNumber
+WHERE 
+    T2.orderNumber IS NULL;
+
+37. List all offices along with employees, including offices with no employees.
+
+SELECT 
+    T1.city AS OfficeCity, T2.firstName, T2.lastName
+FROM 
+    Offices T1
+LEFT JOIN 
+    Employees T2 ON T1.officeCode = T2.officeCode
+ORDER BY 
+    T1.city;
+
+38. Show each order's details including product name, quantity, and price.
+SELECT 
+    T1.orderNumber, 
+    T3.productName, 
+    T2.quantityOrdered, 
+    T2.priceEach
+FROM 
+    Orders T1
+INNER JOIN 
+    OrderDetails T2 ON T1.orderNumber = T2.orderNumber
+INNER JOIN 
+    Products T3 ON T2.productCode = T3.productCode
+ORDER BY 
+    T1.orderNumber;
+
+39. List all customers and the employees who manage their accounts.
+
+SELECT 
+    T1.customerName, 
+    T2.firstName AS SalesRepFirstName, 
+    T2.lastName AS SalesRepLastName
+FROM 
+    Customers T1
+LEFT JOIN 
+    Employees T2 ON T1.salesRepEmployeeNumber = T2.employeeNumber;
+
+40. Retrieve a list of offices with the city and names of employees working there.
+
+SELECT 
+    T1.city AS OfficeCity, T2.firstName, T2.lastName
+FROM 
+    Offices T1
+INNER JOIN 
+    Employees T2 ON T1.officeCode = T2.officeCode
+ORDER BY 
+    T1.city, T2.lastName;
+
+41. List orders that have not yet been shipped.
+
+SELECT 
+    orderNumber, status, orderDate
+FROM 
+    Orders
+WHERE 
+    status IN ('In Process', 'On Hold', 'Awaiting Shipment') 
+   
+42. Show all payments and the product lines the customers ordered.
+
+SELECT DISTINCT
+    T1.checkNumber, T1.amount, T4.productLine
+FROM 
+    Payments T1
+INNER JOIN 
+    Orders T2 ON T1.customerNumber = T2.customerNumber
+INNER JOIN 
+    OrderDetails T3 ON T2.orderNumber = T3.orderNumber
+INNER JOIN 
+    Products T4 ON T3.productCode = T4.productCode
+ORDER BY 
+    T1.checkNumber;
+
+43. Find customers who have made the highest total payment.
+
+SELECT 
+    T1.customerName, SUM(T2.amount) AS totalPaid
+FROM 
+    Customers T1
+JOIN 
+    Payments T2 ON T1.customerNumber = T2.customerNumber
+GROUP BY 
+    T1.customerName
+HAVING 
+    SUM(T2.amount) = (
+        -- Subquery: Find the single highest total payment amount
+        SELECT MAX(TotalAmount) 
+        FROM (
+            SELECT SUM(amount) AS TotalAmount 
+            FROM Payments 
+            GROUP BY customerNumber
+        ) AS SubqueryMax
+    );
+44. List employees who work in the same office as 'Diane Murphy'.
+SELECT 
+    firstName, lastName, officeCode
+FROM 
+    Employees
+WHERE 
+    officeCode = (
+     
+        SELECT officeCode 
+        FROM Employees 
+        WHERE firstName = 'Diane' AND lastName = 'Murphy'
+    )
+AND 
+    firstName <> 'Diane' OR lastName <> 'Murphy';
+
+45. Show products that have never been ordered.
+
+SELECT 
+    productName
+FROM 
+    Products
+WHERE 
+    productCode NOT IN (
+     
+        SELECT DISTINCT productCode 
+        FROM OrderDetails
+    );
+
+46. Get the names of customers whose payments are above the average payment amount.
+
+SELECT DISTINCT
+    T1.customerName
+FROM 
+    Customers T1
+JOIN 
+    Payments T2 ON T1.customerNumber = T2.customerNumber
+WHERE 
+    T2.amount > (
+      
+        SELECT AVG(amount) 
+        FROM Payments
+    );
+
+47. List product lines that have more than 5 products.
+
+SELECT 
+    productLine, COUNT(productCode) AS numberOfProducts
+FROM 
+    Products
+GROUP BY 
+    productLine
+HAVING 
+    COUNT(productCode) > 5;
+
+48. Show customers who have not made any payment.
+
+SELECT 
+    customerName
+FROM 
+    Customers
+WHERE 
+    customerNumber NOT IN (
+        -- Subquery: Find all customer numbers that HAVE made a payment
+        SELECT DISTINCT customerNumber 
+        FROM Payments
+    );
+
+49. Find the employee(s) with the highest number of customers reporting to them.
+
+SELECT 
+    T1.firstName, T1.lastName, COUNT(T2.customerNumber) AS customersManaged
+FROM 
+    Employees T1 -- The Sales Rep
+INNER JOIN 
+    Customers T2 ON T1.employeeNumber = T2.salesRepEmployeeNumber
+GROUP BY 
+    T1.employeeNumber, T1.firstName, T1.lastName
+HAVING 
+    COUNT(T2.customerNumber) = (
+     
+        SELECT MAX(CustomerCount)
+        FROM (
+            SELECT COUNT(customerNumber) AS CustomerCount
+            FROM Customers
+            GROUP BY salesRepEmployeeNumber
+        ) AS SubqueryMax
+    );
+
+50. List products with the highest price in each product line.
+
+SELECT 
+    P.productName, P.productLine, P.MSRP
+FROM 
+    Products P
+WHERE 
+    P.MSRP = (
+    
+        SELECT MAX(MSRP)
+        FROM Products P2
+        WHERE P2.productLine = P.productLine
+    );
+
+51. Show customers who ordered the same product more than once.
+
+SELECT DISTINCT
+    T1.customerName
+FROM 
+    Customers T1
+INNER JOIN 
+    Orders T2 ON T1.customerNumber = T2.customerNumber
+INNER JOIN 
+    OrderDetails T3 ON T2.orderNumber = T3.orderNumber
+GROUP BY 
+    T1.customerName, T3.productCode
+HAVING 
+    COUNT(T3.orderNumber) > 1; 
+
+52. Display the current date and time using a built-in function.
+
+SELECT NOW();
+
+53. Find the total number of customers using COUNT().
+
+SELECT COUNT(customerNumber) AS totalCustomers
+FROM Customers;
+
+54. Show the first 5 characters of each customer's name using SUBSTRING().
+
+SELECT 
+    customerName, SUBSTRING(customerName, 1, 5) AS shortName
+FROM 
+    Customers;
+
+55. List orders placed in the last 30 days using NOW() and DATEDIFF().
+
+SELECT 
+    orderNumber, orderDate
+FROM 
+    Orders
+WHERE 
+    DATEDIFF(NOW(), orderDate) <= 30;
+
+56. Format the order date in 'dd-mm-yyyy' format using DATE_FORMAT().
+
+SELECT 
+    orderNumber, DATE_FORMAT(orderDate, '%d-%m-%Y') AS formattedDate
+FROM 
+    Orders;
+
+
+57. Display the length of each customer name.
+
+SELECT 
+    customerName, LENGTH(customerName) AS nameLength
+FROM 
+    Customers;
+
+58. Convert all employee last names to lowercase.
+
+SELECT 
+    firstName, LOWER(lastName) AS lowerLastName
+FROM 
+    Employees;
+
+59. Show total sales amount for each order using quantityOrdered * priceEach.
+
+SELECT 
+    orderNumber, 
+    SUM(quantityOrdered * priceEach) AS orderTotalAmount
+FROM 
+    OrderDetails
+GROUP BY 
+    orderNumber;
+
+60. Extract year and month from payment dates.
+
+SELECT 
+    paymentDate, 
+    YEAR(paymentDate) AS paymentYear, 
+    MONTH(paymentDate) AS paymentMonth
+FROM 
+    Payments;
