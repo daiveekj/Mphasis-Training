@@ -1,0 +1,78 @@
+import java.util.Arrays;
+
+public class ArrayManipulationDemo {
+
+    public static void main(String[] args) {
+      
+        int[] arr = new int[6]; // Capacity of 6
+        arr[0] = 10;
+        arr[1] = 20;
+        arr[2] = 30;
+        int size = 3; 
+
+
+
+         1. INSERTION 
+        // Insert 99 at index 1 (between 10 and 20)
+
+        int insertPosition = 1;
+        int insertElement = 99;
+        
+        System.out.println("1. Inserting " + insertElement + " at index " + insertPosition);
+        
+
+        for (int i = size; i > insertPosition; i--) {
+            arr[i] = arr[i - 1]; 
+        }
+        
+        arr[insertPosition] = insertElement; 
+        size++;
+
+        System.out.println("After Insertion: " + Arrays.toString(Arrays.copyOf(arr, size))); 
+ 
+
+
+        // 2. DELETION (Shifting Left)
+
+        int deletePosition = 2; 
+
+        System.out.println("2. Deleting element at index " + deletePosition);
+        
+
+        for (int i = deletePosition; i < size - 1; i++) {
+            arr[i] = arr[i + 1]; 
+        }
+
+        size--;
+        arr[size] = 0; 
+
+        System.out.println("After Deletion:  " + Arrays.toString(Arrays.copyOf(arr, size))); 
+    
+
+        
+        // Fill remaining space up to capacity (size 6)
+        arr[3] = 40; arr[4] = 50; arr[5] = 60;
+        size = 6;
+        int nPlusOneElement = 777;
+
+        System.out.println("3. Resizing (N+1 Insertion)");
+        System.out.println("Array is full (Capacity " + arr.length + ", Size " + size + "): " + Arrays.toString(arr));
+        
+        
+        if (size == arr.length) {
+            int newCapacity = arr.length * 2;
+            
+            // Create a new, bigger array and copy data over 
+            int[] newArr = Arrays.copyOf(arr, newCapacity);
+            arr = newArr; 
+            
+            // Insert the N+1 element at the end
+            arr[size] = nPlusOneElement;
+            size++;
+            
+            System.out.println("Successfully Resized and Inserted " + nPlusOneElement);
+        }
+        
+        System.out.println("Final Array (New Capacity " + arr.length + "): " + Arrays.toString(Arrays.copyOf(arr, size)));
+    }
+}
